@@ -1,0 +1,135 @@
+@model MovimentosApp.Models.MovimentoViewModel
+@{
+    ViewData["Title"] = "Movimentos Manuais";
+}
+<h2>Movimentos Manuais</h2>
+
+<form id="formMovimento" method="post" asp-action="Incluir" asp-controller="Movimentos">
+    <div>
+        <label>Mês:</label>
+        <input type="number" id="mes" name="DAT_MES" value="@Model.Mes" min="1" max="12" />
+        <label>Ano:</label>
+        <input type="number" id="ano" name="DAT_ANO" value="@Model.Ano" />
+    </div>
+    <div>
+        <label>Produto:</label>
+        <select id="produto" name="COD_PRODUTO">
+            <option value="">-- selecione --</option>
+            @foreach(var p in Model.Produtos)
+            {
+                <option value="@p.COD_PRODUTO">@p.DES_PRODUTO</option>
+            }
+        </select>
+
+        <label>Cosif:</label>
+        <select id="cosif" name="COD_COSIF">
+            <option value="">-- selecione produto primeiro --</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Número do Lançamento:</label>
+        <input type="number" id="numLanc" name="NUM_LANCAMENTO" value="@Model.ProximoNumeroLancamento" readonly />
+    </div>
+
+    <div>
+        <label>Valor:</label>
+        <input type="text" id="valor" name="VAL_VALOR" />
+    </div>
+
+    <div>
+        <label>Descrição:</label>
+        <textarea id="descricao" name="DES_DESCRICAO"></textarea>
+    </div>
+
+    <div>
+        <button type="button" id="btnLimpar">Limpar</button>
+        <button type="button" id="btnNovo">Novo</button>
+        <button type="submit" id="btnIncluir">Incluir</button>
+    </div>
+</form>
+
+<hr />
+
+<h3>Lista</h3>
+<table id="grid">
+    <thead>
+        <tr>
+            <th>Mês</th><th>Ano</th><th>Código do Produto</th><th>Descrição do Produto</th><th>Número Lançamento</th><th>Descrição</th><th>Valor</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var produto = document.getElementById('produto');
+        var cosif = document.getElementById('cosif');
+        var mes = document.getElementById('mes');
+        var ano = document.getElementById('ano');
+        var numLanc = document.getElementById('numLanc');
+
+        function carregarGrid() {
+            fetch(`/Movimentos/GetGrid?mes=${mes.value}&ano=${ano.value}`)
+                .then(r => r.json())
+                .then(data => {
+                    var tbody = document.querySelector('#grid tbody');
+                    tbody.innerHTML = '';
+                    data.forEach(function(row) {
+                        var tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${row.Mes}</td><td>${row.Ano}</td><td>${row.CodigoProduto}</td><td>${row.DescricaoProduto}</td><td>${row.NumeroLancamento}</td><td>${row.Descricao}</td><td>${row.Valor}</td>`;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        produto.addEventListener('change', function() {
+            var cod = this.value;
+            if(!cod) {
+                cosif.innerHTML = '<option value="">-- selecione produto primeiro --</option>';
+                return;
+            }
+            fetch(`/Movimentos/GetCosifs?codProduto=${cod}`)
+                .then(r => r.json())
+                .then(data => {
+                    cosif.innerHTML = '';
+                    data.forEach(function(c) {
+                        var opt = document.createElement('option');
+                        opt.value = c.COD_COSIF;
+                        opt.text = c.COD_COSIF + ' - (' + (c.COD_CLASSIFICACAO || '') + ')';
+                        cosif.appendChild(opt);
+                    });
+                });
+        });
+
+        document.getElementById('btnLimpar').addEventListener('click', function() {
+            document.getElementById('formMovimento').reset();
+        });
+
+        document.getElementById('btnNovo').addEventListener('click', function() {
+            // habilita campos para inserção: aqui form já editável; recalcula próximo número
+            fetch(`/Movimentos/GetGrid?mes=${mes.value}&ano=${ano.value}`)
+                .then(_ => fetch(`/Movimentos/GetGrid?mes=${mes.value}&ano=${ano.value}`)); // só garantimos reload; o next number é obtido no carregamento inicial
+            // requisitar próximo numero via GET usando o repo via action (poderíamos criar endpoint específico; mas o número já sido definido na Index)
+            // Para simplicidade, atualizamos o campo numLanc com valor do servidor pedindo via endpoint adicional:
+            fetch(`/Movimentos/GetGrid?mes=${mes.value}&ano=${ano.value}`)
+                .then(r => r.json())
+                .then(rows => {
+                    // compute next on client side: max +1
+                    var max = 0;
+                    rows.forEach(function(r){ if(r.NumeroLancamento > max) max = r.NumeroLancamento; });
+                    numLanc.value = (max || 0) + 1;
+                });
+        });
+
+        // ao carregar a página, carregar grid
+        carregarGrid();
+
+        // ao mudar mes/ano, recarregar grid e recomputar numero lancamento
+        mes.addEventListener('change', function(){ carregarGrid(); document.getElementById('btnNovo').click(); });
+        ano.addEventListener('change', function(){ carregarGrid(); document.getElementById('btnNovo').click(); });
+    });
+</script>
+}
