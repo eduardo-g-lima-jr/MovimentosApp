@@ -22,7 +22,7 @@ GO
 IF OBJECT_ID('dbo.PRODUTO_COSIF', 'U') IS NOT NULL DROP TABLE dbo.PRODUTO_COSIF;
 CREATE TABLE dbo.PRODUTO_COSIF (
     COD_PRODUTO CHAR(4) NOT NULL,
-    COD_COSIF VARCHAR(11) NOT NULL,
+    COD_COSIF CHAR(11) NOT NULL,
     COD_CLASSIFICACAO CHAR(6) NULL,
     STA_STATUS CHAR(1) NULL,
     CONSTRAINT PK_PRODUTO_COSIF PRIMARY KEY (COD_PRODUTO, COD_COSIF),
@@ -57,19 +57,20 @@ GO
 
 -- Inserts em PRODUTO_COSIF
 INSERT INTO dbo.PRODUTO_COSIF (COD_PRODUTO, COD_COSIF, COD_CLASSIFICACAO, STA_STATUS) VALUES
-('P001', '1000.01', 'NORMAL', 'A'),
-('P001', '1000.02', 'MTM', 'A'),
-('P002', '2000.01', 'NORMAL', 'A'),
-('P003', '3000.01', 'NORMAL', 'A');
+('P001', '01', 'NORMAL', 'A'),
+('P001', '02', 'MTM', 'A'),
+('P002', '01', 'NORMAL', 'A'),
+('P003', '01', 'NORMAL', 'A'),
+('P003', '02', 'MTM', 'A');
 GO
 
 -- Inserts em MOVIMENTO_MANUAL
 INSERT INTO dbo.MOVIMENTO_MANUAL (DAT_MES, DAT_ANO, NUM_LANCAMENTO, COD_PRODUTO, COD_COSIF, VAL_VALOR, DES_DESCRICAO, DAT_MOVIMENTO, COD_USUARIO)
 VALUES
-(5, 2012, 1, 'P001', '1000.01', 500.00, 'Teste Movimentos', GETDATE(), 'cand01'),
-(5, 2012, 2, 'P002', '2000.01', 10.00, 'Teste Movimentos 2', GETDATE(), 'cand01'),
-(5, 2012, 3, 'P001', '1000.02', 12.00, 'Teste Movimentos 3', GETDATE(), 'cand01'),
-(6, 2012, 1, 'P001', '1000.01', 100.00, 'Teste Movimentos 4', GETDATE(), 'cand01');
+(10, 2025, 1, 'P001', '01', 500.00, 'Teste Movimentos', GETDATE(), 'user01'),
+(10, 2025, 2, 'P002', '01', 10.00, 'Teste Movimentos 2', GETDATE(), 'user01'),
+(10, 2025, 3, 'P001', '02', 12.00, 'Teste Movimentos 3', GETDATE(), 'user01'),
+(10, 2025, 4, 'P001', '01', 100.00, 'Teste Movimentos 4', GETDATE(), 'user01');
 GO
 
 -- Stored Procedure: usp_GetMovimentosPorMesAno

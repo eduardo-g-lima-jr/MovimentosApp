@@ -21,16 +21,20 @@ namespace MovimentosApp.Controllers
             vm.Produtos = _repo.GetAllProdutos();
             vm.ProximoNumeroLancamento = _repo.GetNextNumeroLancamento(vm.Mes, vm.Ano);
             vm.Cosifs = new ProdutoCosif[0];
+
+            // Carregar grid com registros do mês/ano atual
+            vm.Movimentos = _repo.GetMovimentosPorMesAno(vm.Mes, vm.Ano);
             return View(vm);
         }
 
         [HttpGet]
         public IActionResult GetCosifs(string codProduto)
         {
-            if (string.IsNullOrEmpty(codProduto)) return Json(new object[0]);
-            var cos = _repo.GetCosifsByProduto(codProduto);
-            // retornar COD_COSIF e COD_CLASSIFICACAO para exibição
-            return Json(cos);
+            if (string.IsNullOrEmpty(codProduto))
+                return Json(new { erro = "Produto inválido" });
+
+            var cosifs = _repo.GetCosifsByProduto(codProduto);
+            return Json(cosifs);
         }
 
         [HttpGet]
@@ -43,13 +47,12 @@ namespace MovimentosApp.Controllers
         [HttpPost]
         public IActionResult Incluir([FromForm] MovimentoManual model)
         {
-            // validações mínimas
-            if(model == null) return BadRequest();
-            model.DAT_MOVIMENTO = DateTime.Now;
-            if (model.NUM_LANCAMENTO <= 0)
-                model.NUM_LANCAMENTO = _repo.GetNextNumeroLancamento(model.DAT_MES, model.DAT_ANO);
+            if (model == null) return BadRequest();
 
-            // pode adicionar validação se produto/cosif existem
+            model.DAT_MOVIMENTO = DateTime.Now;
+            model.NUM_LANCAMENTO = _repo.GetNextNumeroLancamento(model.DAT_MES, model.DAT_ANO);
+            model.COD_USUARIO = "user01";
+            
             _repo.InsertMovimento(model);
             return RedirectToAction("Index", new { mes = model.DAT_MES, ano = model.DAT_ANO });
         }

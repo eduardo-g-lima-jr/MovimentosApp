@@ -1,135 +1,214 @@
 @model MovimentosApp.Models.MovimentoViewModel
+
 @{
     ViewData["Title"] = "Movimentos Manuais";
 }
-<h2>Movimentos Manuais</h2>
 
-<form id="formMovimento" method="post" asp-action="Incluir" asp-controller="Movimentos">
-    <div>
-        <label>Mês:</label>
-        <input type="number" id="mes" name="DAT_MES" value="@Model.Mes" min="1" max="12" />
-        <label>Ano:</label>
-        <input type="number" id="ano" name="DAT_ANO" value="@Model.Ano" />
-    </div>
-    <div>
-        <label>Produto:</label>
-        <select id="produto" name="COD_PRODUTO">
-            <option value="">-- selecione --</option>
-            @foreach(var p in Model.Produtos)
-            {
-                <option value="@p.COD_PRODUTO">@p.DES_PRODUTO</option>
-            }
-        </select>
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Movimentos Manuais</h2>
 
-        <label>Cosif:</label>
-        <select id="cosif" name="COD_COSIF">
-            <option value="">-- selecione produto primeiro --</option>
-        </select>
-    </div>
+    <form asp-action="Incluir" method="post" id="formMovimento" class="border p-3 rounded shadow-sm">
+        <div class="row mb-3">
+            <div class="col-md-2">
+                <label>Mês:</label>
+                <input type="number" name="DAT_MES" value="@Model.Mes" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label>Ano:</label>
+                <input type="number" name="DAT_ANO" value="@Model.Ano" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label>Produto:</label>
+                <select id="produto" name="COD_PRODUTO" class="form-select">
+                    <option value="">-- selecione --</option>
+                    @foreach (var p in Model.Produtos)
+                    {
+                        <option value="@p.COD_PRODUTO">@p.DES_PRODUTO</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label>Cosif:</label>
+                <select id="cosif" name="COD_COSIF" class="form-select">
+                    <option value="">-- selecione produto primeiro --</option>
+                </select>
+            </div>
+        </div>
 
-    <div>
-        <label>Número do Lançamento:</label>
-        <input type="number" id="numLanc" name="NUM_LANCAMENTO" value="@Model.ProximoNumeroLancamento" readonly />
-    </div>
+        <div class="row mb-3">
+            <input type="hidden" name="NUM_LANCAMENTO" value="@Model.ProximoNumeroLancamento" />
+            <div class="col-md-3">
+                <label>Valor:</label>
+                <input type="number" step="0.01" name="VAL_VALOR" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label>Descrição:</label>
+                <textarea name="DES_DESCRICAO" class="form-control"></textarea>
+            </div>
+        </div>
 
-    <div>
-        <label>Valor:</label>
-        <input type="text" id="valor" name="VAL_VALOR" />
-    </div>
+        <div class="text-center">
+            <button type="reset" id="btnLimpar" class="btn btn-secondary me-2">Limpar</button>
+            <button type="button" id="btnPesquisar" class="btn btn-success me-2" style="background-color: #4CAF50;">Pesquisar</button>
+            <button type="submit" class="btn btn-primary">Incluir</button>
+        </div>
 
-    <div>
-        <label>Descrição:</label>
-        <textarea id="descricao" name="DES_DESCRICAO"></textarea>
-    </div>
+    </form>
 
-    <div>
-        <button type="button" id="btnLimpar">Limpar</button>
-        <button type="button" id="btnNovo">Novo</button>
-        <button type="submit" id="btnIncluir">Incluir</button>
-    </div>
-</form>
+    <hr class="my-4" />
 
-<hr />
-
-<h3>Lista</h3>
-<table id="grid">
-    <thead>
+    <h4>Lista</h4>
+<table class="table table-bordered table-striped mt-3" id="gridMovimentos">
+    <thead class="table-light">
         <tr>
-            <th>Mês</th><th>Ano</th><th>Código do Produto</th><th>Descrição do Produto</th><th>Número Lançamento</th><th>Descrição</th><th>Valor</th>
+            <th>Mês</th>
+            <th>Ano</th>
+            <th>Código do Produto</th>
+            <th>Descrição do Produto</th>
+            <th>Número Lançamento</th>
+            <th>Descrição</th>
+            <th>Valor</th>
         </tr>
     </thead>
     <tbody>
+        @if (Model.Movimentos != null && Model.Movimentos.Any())
+        {
+            foreach (var item in Model.Movimentos)
+            {
+                <tr>
+                    <td>@item.DAT_MES</td>
+                    <td>@item.DAT_ANO</td>
+                    <td>@item.COD_PRODUTO</td>
+                    <td>@item.DES_PRODUTO</td>
+                    <td>@item.NUM_LANCAMENTO</td>
+                    <td>@item.DES_DESCRICAO</td>
+                    <td>@item.VAL_VALOR.ToString("C")</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center text-muted">Nenhum movimento encontrado</td>
+            </tr>
+        }
     </tbody>
 </table>
+</div>
 
 @section Scripts {
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var produto = document.getElementById('produto');
-        var cosif = document.getElementById('cosif');
-        var mes = document.getElementById('mes');
-        var ano = document.getElementById('ano');
-        var numLanc = document.getElementById('numLanc');
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(function () {
 
-        function carregarGrid() {
-            fetch(`/Movimentos/GetGrid?mes=${mes.value}&ano=${ano.value}`)
-                .then(r => r.json())
-                .then(data => {
-                    var tbody = document.querySelector('#grid tbody');
-                    tbody.innerHTML = '';
-                    data.forEach(function(row) {
-                        var tr = document.createElement('tr');
-                        tr.innerHTML = `<td>${row.Mes}</td><td>${row.Ano}</td><td>${row.CodigoProduto}</td><td>${row.DescricaoProduto}</td><td>${row.NumeroLancamento}</td><td>${row.Descricao}</td><td>${row.Valor}</td>`;
-                        tbody.appendChild(tr);
+            const $produto = $('#produto');
+            const $cosif = $('#cosif');
+            const $tbody = $('#gridMovimentos tbody');
+
+            // ========================
+            // Funções utilitárias
+            // ========================
+
+            // Preenche o combo de COSIFs conforme o produto selecionado
+            function carregarCosifs(codProduto) {
+                $cosif.empty();
+
+                if (!codProduto) {
+                    adicionarOpcaoCosif('-- selecione produto primeiro --');
+                    return;
+                }
+
+                $.get('/Movimentos/GetCosifs', { codProduto })
+                    .done(function (data) {
+                        if (!data || data.length === 0) {
+                            adicionarOpcaoCosif('-- nenhum cosif disponível --');
+                            return;
+                        }
+
+                        adicionarOpcaoCosif('-- selecione --');
+                        data.forEach(item => {
+                            $cosif.append(
+                                $('<option>', {
+                                    value: item.COD_COSIF,
+                                    text: `${item.COD_COSIF} - ${item.COD_CLASSIFICACAO}`
+                                })
+                            );
+                        });
+                    })
+                    .fail(() => {
+                        adicionarOpcaoCosif('-- erro ao carregar cosifs --');
                     });
-                });
-        }
-
-        produto.addEventListener('change', function() {
-            var cod = this.value;
-            if(!cod) {
-                cosif.innerHTML = '<option value="">-- selecione produto primeiro --</option>';
-                return;
             }
-            fetch(`/Movimentos/GetCosifs?codProduto=${cod}`)
-                .then(r => r.json())
-                .then(data => {
-                    cosif.innerHTML = '';
-                    data.forEach(function(c) {
-                        var opt = document.createElement('option');
-                        opt.value = c.COD_COSIF;
-                        opt.text = c.COD_COSIF + ' - (' + (c.COD_CLASSIFICACAO || '') + ')';
-                        cosif.appendChild(opt);
+
+            // Adiciona uma opção simples ao combo de COSIF
+            function adicionarOpcaoCosif(texto, valor = '') {
+                $cosif.append($('<option>', { value: valor, text: texto }));
+            }
+
+            // Carrega os movimentos no grid de acordo com mês e ano
+            function carregarGrid() {
+                const mes = $('input[name=DAT_MES]').val();
+                const ano = $('input[name=DAT_ANO]').val();
+
+                $tbody.empty();
+
+                $.getJSON('/Movimentos/GetGrid', { mes, ano })
+                    .done(function (data) {
+                        if (!data || data.length === 0) {
+                            adicionarLinhaTabela('Nenhum movimento encontrado');
+                            return;
+                        }
+
+                        data.forEach(item => {
+                            $tbody.append(`
+                                <tr>
+                                    <td>${item.DAT_MES}</td>
+                                    <td>${item.DAT_ANO}</td>
+                                    <td>${item.COD_PRODUTO}</td>
+                                    <td>${item.DES_PRODUTO}</td>
+                                    <td>${item.NUM_LANCAMENTO}</td>
+                                    <td>${item.DES_DESCRICAO}</td>
+                                    <td>R$ ${Number(item.VAL_VALOR).toFixed(2)}</td>
+                                </tr>
+                            `);
+                        });
+                    })
+                    .fail(() => {
+                        adicionarLinhaTabela('Erro ao carregar os movimentos');
                     });
-                });
+            }
+
+            // Adiciona uma linha de mensagem na tabela
+            function adicionarLinhaTabela(mensagem) {
+                $tbody.append(`
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">${mensagem}</td>
+                    </tr>
+                `);
+            }
+
+            // ========================
+            // Eventos
+            // ========================
+
+            // Quando trocar o produto → atualiza os COSIFs
+            $produto.change(function () {
+                carregarCosifs($(this).val());
+            });
+
+            // Botão PESQUISAR → recarrega a grid com os valores de mês e ano
+            $('#btnPesquisar').click(carregarGrid);
+
+            // Botão LIMPAR → reseta o combo COSIF e campos do formulário
+            $('#btnLimpar').click(function () {
+                adicionarOpcaoCosif('-- selecione produto primeiro --');
+            });
+
+            // ========================
+            // Inicialização
+            // ========================
+
+            carregarGrid(); // já carrega ao abrir a página
         });
-
-        document.getElementById('btnLimpar').addEventListener('click', function() {
-            document.getElementById('formMovimento').reset();
-        });
-
-        document.getElementById('btnNovo').addEventListener('click', function() {
-            // habilita campos para inserção: aqui form já editável; recalcula próximo número
-            fetch(`/Movimentos/GetGrid?mes=${mes.value}&ano=${ano.value}`)
-                .then(_ => fetch(`/Movimentos/GetGrid?mes=${mes.value}&ano=${ano.value}`)); // só garantimos reload; o next number é obtido no carregamento inicial
-            // requisitar próximo numero via GET usando o repo via action (poderíamos criar endpoint específico; mas o número já sido definido na Index)
-            // Para simplicidade, atualizamos o campo numLanc com valor do servidor pedindo via endpoint adicional:
-            fetch(`/Movimentos/GetGrid?mes=${mes.value}&ano=${ano.value}`)
-                .then(r => r.json())
-                .then(rows => {
-                    // compute next on client side: max +1
-                    var max = 0;
-                    rows.forEach(function(r){ if(r.NumeroLancamento > max) max = r.NumeroLancamento; });
-                    numLanc.value = (max || 0) + 1;
-                });
-        });
-
-        // ao carregar a página, carregar grid
-        carregarGrid();
-
-        // ao mudar mes/ano, recarregar grid e recomputar numero lancamento
-        mes.addEventListener('change', function(){ carregarGrid(); document.getElementById('btnNovo').click(); });
-        ano.addEventListener('change', function(){ carregarGrid(); document.getElementById('btnNovo').click(); });
-    });
-</script>
+    </script>
 }

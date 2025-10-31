@@ -9,5 +9,6 @@ namespace MovimentosApp.Models
         public long ProximoNumeroLancamento { get; set; }
         public IEnumerable<Produto> Produtos { get; set; }
         public IEnumerable<ProdutoCosif> Cosifs { get; set; }
+        public IEnumerable<MovimentoManual> Movimentos { get; set; }
     }
 }

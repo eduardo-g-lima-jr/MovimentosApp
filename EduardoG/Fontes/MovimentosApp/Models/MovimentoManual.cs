@@ -13,5 +13,6 @@ namespace MovimentosApp.Models
         public string DES_DESCRICAO { get; set; }
         public DateTime DAT_MOVIMENTO { get; set; }
         public string COD_USUARIO { get; set; }
+        public string DES_PRODUTO { get; set; }
     }
 }
