@@ -1,0 +1,81 @@
+# Compilação
+bin/
+obj/
+out/
+Debug/
+Release/
+
+# Pacotes NuGet restauráveis
+*.nupkg
+*.snupkg
+packages/
+# Se você quiser manter o arquivo packages.config, descomente a linha abaixo
+#!packages.config
+
+# Arquivos de build do Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Arquivos de cache e logs
+*.log
+*.tlog
+*.pidb
+*.svclog
+*.scc
+
+# Dependências restauráveis
+**/node_modules/
+**/lib/
+**/wwwroot/lib/
+**/wwwroot/node_modules/
+
+# Configurações locais
+appsettings.Development.json
+appsettings.Local.json
+launchSettings.json
+
+# Diretórios temporários
+tmp/
+temp/
+logs/
+TestResults/
+
+# Arquivos de publicação
+publish/
+*.Publish.xml
+*.pubxml
+*.pubxml.user
+
+# Outros
+*.dbmdl
+*.bak
+*.mdf
+*.ldf
+*.sqlite
+*.sqlite3
+*.DS_Store
+
+# Backup e histórico
+*~
+*.bak
+*.swp
+*.orig
+
+# Sistema operacional
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Rider / JetBrains
+.idea/
+*.iml
+
+# Arquivos de ambiente
+.env
+.env.*
+
